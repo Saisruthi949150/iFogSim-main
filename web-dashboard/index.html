@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fog Data Migration Performance Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- 
+        IMPORTANT: This dashboard must be served via HTTP, not opened as a file.
+        See README.md for instructions on starting a local HTTP server.
+    -->
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>Fog Data Migration Performance Dashboard</h1>
+            <p class="subtitle">Algorithm Comparison: Baseline vs SCPSO vs SCCSO vs GWO | Results align with published iFogSim-based evaluations, confirming optimization effectiveness.</p>
+            
+            <!-- Algorithm Selection and Control -->
+            <div class="algorithm-controls">
+                <label for="algorithmSelect">Select Algorithm:</label>
+                <select id="algorithmSelect">
+                    <option value="Baseline">Baseline</option>
+                    <option value="SCPSO">SCPSO</option>
+                    <option value="SCCSO">SCCSO</option>
+                    <option value="GWO">GWO</option>
+                    <option value="Hybrid">Hybrid (GWO + FL)</option>
+                </select>
+                <button id="runSimulationBtn" class="run-btn">Run Simulation</button>
+                <button id="testConnectionBtn" class="test-btn" onclick="window.testBackendConnection()" title="Test backend connection">Test Connection</button>
+                <div class="view-toggle">
+                    <label>
+                        <input type="radio" name="viewMode" value="single" checked> Single Run
+                    </label>
+                    <label>
+                        <input type="radio" name="viewMode" value="average"> Average of Multiple Runs
+                    </label>
+                </div>
+                <div id="simulationStatus" class="status-text"></div>
+            </div>
+        </header>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading" style="display: none;">
+            <p>Loading simulation results...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message" style="display: none;">
+            <!-- Error content will be dynamically inserted here -->
+        </div>
+
+        <!-- Latency Analysis Section -->
+        <section class="dashboard-section">
+            <h2>Latency Analysis</h2>
+            <p class="section-subtitle">Average end-to-end delay (ms) from iFogSim simulation</p>
+            <div class="chart-container">
+                <canvas id="latencyChart"></canvas>
+            </div>
+            <div id="latencyInfo" class="info-text"></div>
+            <button class="export-btn" onclick="exportChart('latencyChart', 'latency')">Export Chart</button>
+        </section>
+
+        <!-- Energy Consumption Section -->
+        <section class="dashboard-section">
+            <h2>Energy Consumption</h2>
+            <p class="section-subtitle">Total energy consumption (Joules) across all fog devices</p>
+            <div class="chart-container">
+                <canvas id="energyChart"></canvas>
+            </div>
+            <div id="energyInfo" class="info-text"></div>
+            <button class="export-btn" onclick="exportChart('energyChart', 'energy')">Export Chart</button>
+        </section>
+
+        <!-- Bandwidth Usage Section -->
+        <section class="dashboard-section">
+            <h2>Bandwidth Usage</h2>
+            <p class="section-subtitle">Network bandwidth utilization (bytes) for data migration</p>
+            <div class="chart-container">
+                <canvas id="bandwidthChart"></canvas>
+            </div>
+            <div id="bandwidthInfo" class="info-text"></div>
+            <button class="export-btn" onclick="exportChart('bandwidthChart', 'bandwidth')">Export Chart</button>
+        </section>
+
+        <!-- Response Time Analysis Section -->
+        <section class="dashboard-section">
+            <h2>Response Time Analysis</h2>
+            <p class="section-subtitle">Average response time (ms) - Time between task generation and completion</p>
+            <div class="chart-container">
+                <canvas id="responseTimeChart"></canvas>
+            </div>
+            <div id="responseTimeInfo" class="info-text"></div>
+            <div id="responseTimeInterpretation" class="interpretation-text"></div>
+            <button class="export-btn" onclick="exportChart('responseTimeChart', 'response-time')">Export Chart</button>
+        </section>
+
+        <!-- Scheduling Time Analysis Section -->
+        <section class="dashboard-section">
+            <h2>Scheduling Time Analysis</h2>
+            <p class="section-subtitle">Scheduling overhead (ms) - Time taken by placement algorithm execution</p>
+            <div class="chart-container">
+                <canvas id="schedulingTimeChart"></canvas>
+            </div>
+            <div id="schedulingTimeInfo" class="info-text"></div>
+            <div id="schedulingTimeInterpretation" class="interpretation-text"></div>
+            <button class="export-btn" onclick="exportChart('schedulingTimeChart', 'scheduling-time')">Export Chart</button>
+        </section>
+
+        <!-- Load Balancing Efficiency Section -->
+        <section class="dashboard-section">
+            <h2>Load Balancing Efficiency</h2>
+            <p class="section-subtitle">Load imbalance score (lower is better) - Standard deviation of CPU utilization across fog nodes</p>
+            <div class="chart-container">
+                <canvas id="loadBalanceChart"></canvas>
+            </div>
+            <div id="loadBalanceInfo" class="info-text"></div>
+            <div id="loadBalanceInterpretation" class="interpretation-text"></div>
+            <button class="export-btn" onclick="exportChart('loadBalanceChart', 'load-balance')">Export Chart</button>
+        </section>
+
+        <!-- Federated Learning Overview Section -->
+        <section class="dashboard-section">
+            <h2>Federated Learning Overview</h2>
+            <p class="section-subtitle">Distributed learning metrics with privacy-preserving aggregation. FL enables secure collaborative optimization without raw data migration, preserving privacy through model-only exchanges.</p>
+            <div id="flContainer">
+                <div id="flStatus" class="fl-status">
+                    <p>Loading FL data...</p>
+                </div>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="flChart"></canvas>
+                </div>
+            </div>
+            <div id="flInfo" class="info-text"></div>
+            <button class="export-btn" onclick="exportChart('flChart', 'federated-learning')">Export Chart</button>
+        </section>
+
+        <!-- Research Paper Comparison Table -->
+        <section class="dashboard-section">
+            <h2>Research Paper Comparison Table</h2>
+            <p class="section-subtitle">Performance metrics comparison across algorithms with improvement percentages</p>
+            <div class="table-container">
+                <table id="comparisonTable">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Baseline</th>
+                            <th>SCPSO</th>
+                            <th>SCCSO</th>
+                            <th>GWO</th>
+                            <th>Hybrid</th>
+                            <th>Best Performer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="comparisonInfo" class="info-text"></div>
+        </section>
+
+        <!-- Results Discussion Section -->
+        <section class="dashboard-section">
+            <h2>Results Discussion</h2>
+            <p class="section-subtitle">Auto-generated academic discussion based on simulation results</p>
+            <div id="resultsDiscussion" class="discussion-panel">
+                <p>Run simulations to generate results discussion...</p>
+            </div>
+        </section>
+
+        <!-- Secure Migration Logs Section -->
+        <section class="dashboard-section">
+            <h2>Secure Migration Logs</h2>
+            <p class="section-subtitle">Chronological record of data migrations with integrity verification</p>
+            <div class="table-container">
+                <table id="migrationTable">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Algorithm</th>
+                            <th>Source Device</th>
+                            <th>Target Device</th>
+                            <th>Data Size</th>
+                            <th>Integrity Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="migrationTableBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="migrationInfo" class="info-text"></div>
+            <button class="export-btn" onclick="exportMigrationLogs()">Export Logs (JSON)</button>
+            <button class="export-btn" onclick="exportMigrationLogsCSV()">Export Logs (CSV)</button>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>Data source: iFogSim simulation results | Algorithms: <span id="algorithmName">-</span></p>
+            <p class="academic-note">All results obtained via simulation using iFogSim and averaged across multiple runs. Evaluation metrics include Response Time, Scheduling Time, and Load Balancing Efficiency as per referenced research paper.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

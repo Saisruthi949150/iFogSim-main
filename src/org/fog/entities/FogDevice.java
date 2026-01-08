@@ -212,9 +212,14 @@ public class FogDevice extends PowerDatacenter {
             throw new Exception(super.getName()
                     + " : Error - this entity has no PEs. Therefore, can't process any Cloudlets.");
         }
-
-
-        getCharacteristics().setId(super.getId());
+        // stores id of this class - use reflection to access protected method
+        try {
+            java.lang.reflect.Method setIdMethod = getCharacteristics().getClass().getSuperclass().getDeclaredMethod("setId", int.class);
+            setIdMethod.setAccessible(true);
+            setIdMethod.invoke(getCharacteristics(), super.getId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         applicationMap = new HashMap<String, Application>();
         appToModulesMap = new HashMap<String, List<String>>();
@@ -320,6 +325,17 @@ public class FogDevice extends PowerDatacenter {
         NetworkUsageMonitor.sendingModule((double) object.get("delay"), appModule.getSize());
         MigrationDelayMonitor.setMigrationDelay((double) object.get("delay"));
 
+        // Log real-time migration
+        Integer targetDeviceId = (Integer) object.get("destId");
+        if (targetDeviceId != null) {
+            FogDevice targetDevice = (FogDevice)CloudSim.getEntity(targetDeviceId);
+            if (targetDevice != null) {
+                double delay = (double) object.get("delay");
+                long dataSize = appModule.getSize();
+                org.fog.utils.MigrationLogger.getInstance().logMigration(
+                    this, targetDevice, appModule, dataSize, delay);
+            }
+        }
 
         sendNow(getId(), FogEvents.RELEASE_MODULE, appModule);
 
@@ -334,6 +350,16 @@ public class FogDevice extends PowerDatacenter {
         System.out.println(getName() + " is receiving " + appModule.getName());
         NetworkUsageMonitor.sendingModule((double) object.get("delay"), appModule.getSize());
         MigrationDelayMonitor.setMigrationDelay((double) object.get("delay"));
+
+        // Log real-time migration (receiver side) - use event source as source device ID
+        int sourceDeviceId = ev.getSource();
+        if (sourceDeviceId != getId() && sourceDeviceId >= 0) {
+            double delay = (double) object.get("delay");
+            long dataSize = appModule.getSize();
+            // Log with device IDs (names will be looked up from cache)
+            org.fog.utils.MigrationLogger.getInstance().logMigration(
+                sourceDeviceId, getId(), null, getName(), appModule, dataSize, delay);
+        }
 
         sendNow(getId(), FogEvents.APP_SUBMIT, app);
         sendNow(getId(), FogEvents.LAUNCH_MODULE, appModule);
