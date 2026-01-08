@@ -16,9 +16,11 @@ import org.fog.entities.Actuator;
 import org.fog.entities.FogDevice;
 import org.fog.entities.Sensor;
 import org.fog.utils.Config;
+import org.fog.utils.FederatedLearningManager;
 import org.fog.utils.FogEvents;
 import org.fog.utils.FogUtils;
 import org.fog.utils.NetworkUsageMonitor;
+import org.fog.utils.ResultsExporter;
 import org.fog.utils.TimeKeeper;
 
 public class Controller extends SimEntity{
@@ -80,6 +82,11 @@ public class Controller extends SimEntity{
 		
 		send(getId(), Config.MAX_SIMULATION_TIME, FogEvents.STOP_SIMULATION);
 		
+		// Schedule federated learning updates if enabled
+		if (FederatedLearningManager.getInstance().isEnabled()) {
+			send(getId(), FederatedLearningManager.FL_UPDATE_INTERVAL, FogEvents.FEDERATED_LEARNING_UPDATE);
+		}
+		
 		for(FogDevice dev : getFogDevices())
 			sendNow(dev.getId(), FogEvents.RESOURCE_MGMT);
 
@@ -97,12 +104,19 @@ public class Controller extends SimEntity{
 		case FogEvents.CONTROLLER_RESOURCE_MANAGE:
 			manageResources();
 			break;
+		case FogEvents.FEDERATED_LEARNING_UPDATE:
+			processFederatedLearningUpdate();
+			break;
 		case FogEvents.STOP_SIMULATION:
 			CloudSim.stopSimulation();
 			printTimeDetails();
 			printPowerDetails();
 			printCostDetails();
 			printNetworkUsageDetails();
+			
+			// Export results to JSON files
+			ResultsExporter.exportResults(getFogDevices(), getApplications());
+			
 			System.exit(0);
 			break;
 			
@@ -174,6 +188,18 @@ public class Controller extends SimEntity{
 
 	protected void manageResources(){
 		send(getId(), Config.RESOURCE_MANAGE_INTERVAL, FogEvents.CONTROLLER_RESOURCE_MANAGE);
+	}
+	
+	/**
+	 * Process federated learning update
+	 */
+	private void processFederatedLearningUpdate() {
+		FederatedLearningManager flManager = FederatedLearningManager.getInstance();
+		if (flManager.isEnabled()) {
+			flManager.performTrainingRound();
+			// Schedule next FL update
+			send(getId(), FederatedLearningManager.FL_UPDATE_INTERVAL, FogEvents.FEDERATED_LEARNING_UPDATE);
+		}
 	}
 	
 	private void processTupleFinished(SimEvent ev) {

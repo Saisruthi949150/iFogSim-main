@@ -16,6 +16,7 @@ import org.fog.entities.FogDevice;
 import org.fog.entities.Sensor;
 import org.fog.entities.Tuple;
 import org.fog.utils.Logger;
+import org.fog.utils.MetricsTracker;
 
 public class ModulePlacementEdgewards extends ModulePlacement{
 	
@@ -57,6 +58,8 @@ public class ModulePlacementEdgewards extends ModulePlacement{
 	
 	@Override
 	protected void mapModules() {
+		// Track scheduling time for Baseline algorithm
+		long startTime = System.nanoTime();
 		
 		for(String deviceName : getModuleMapping().getModuleMapping().keySet()){
 			for(String moduleName : getModuleMapping().getModuleMapping().get(deviceName)){
@@ -78,6 +81,11 @@ public class ModulePlacementEdgewards extends ModulePlacement{
 				createModuleInstanceOnDevice(getApplication().getModuleByName(module), getFogDeviceById(deviceId));
 			}
 		}
+		
+		// Record scheduling time for Baseline algorithm
+		long endTime = System.nanoTime();
+		double schedulingTimeMs = (endTime - startTime) / 1e6; // Convert nanoseconds to milliseconds
+		MetricsTracker.getInstance().recordSchedulingTime(schedulingTimeMs);
 	}
 	
 	/**
