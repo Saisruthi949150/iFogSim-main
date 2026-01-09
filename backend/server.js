@@ -77,10 +77,12 @@ app.post('/run-simulation', async (req, res) => {
     }
     
     // Handle Hybrid mode (use GWO with FL)
-    const actualAlgorithm = algorithm === 'Hybrid' ? 'GWO' : algorithm;
+    // IMPORTANT: Pass "Hybrid" to Java so it generates files with "hybrid" prefix
+    // The Java code will internally use GWO but set algorithm name to "Hybrid" for file naming
+    const javaAlgorithm = algorithm; // Pass original algorithm name (including "Hybrid")
     const shouldEnableFL = enableFL || algorithm === 'Hybrid';
     
-    console.log(`Starting simulation with algorithm: ${actualAlgorithm}${shouldEnableFL ? ' (FL enabled)' : ''}`);
+    console.log(`Starting simulation with algorithm: ${algorithm}${shouldEnableFL ? ' (FL enabled)' : ''}`);
     
     try {
         // Build classpath - collect all JAR files from lib directory
@@ -133,13 +135,14 @@ app.post('/run-simulation', async (req, res) => {
         // PART A: Java command to run DynamicSimulation
         // DynamicSimulation handles all algorithms (Baseline, SCPSO, SCCSO, GWO, Hybrid)
         // Pass enableFL as second argument if true
+        // IMPORTANT: Pass original algorithm name (including "Hybrid") so Java can set correct file names
         const flFlag = shouldEnableFL ? ' FL' : '';
-        const javaCommand = `java -cp "${classpath}" org.fog.test.DynamicSimulation ${actualAlgorithm}${flFlag}`;
+        const javaCommand = `java -cp "${classpath}" org.fog.test.DynamicSimulation ${javaAlgorithm}${flFlag}`;
         
         console.log('========================================');
         console.log(`PART A: FORCING iFogSim EXECUTION`);
         console.log(`Algorithm: ${algorithm}`);
-        console.log(`Actual Algorithm: ${actualAlgorithm}`);
+        console.log(`Java Algorithm: ${javaAlgorithm}`);
         console.log(`FL Enabled: ${shouldEnableFL}`);
         console.log(`Command: ${javaCommand}`);
         console.log('========================================');
@@ -226,10 +229,19 @@ app.post('/run-simulation', async (req, res) => {
             // Algorithm name for file lookup (Hybrid uses "hybrid" prefix, others use lowercase)
             const algoLower = algorithm.toLowerCase();
             
+            console.log(`Looking for result files with prefix: "${algoLower}"`);
+            console.log(`Results directory: ${RESULTS_DIR}`);
+            console.log(`Results directory exists: ${fs.existsSync(RESULTS_DIR)}`);
+            
             // Define required file paths
             const latencyFile = path.join(RESULTS_DIR, `${algoLower}_latency.json`);
             const energyFile = path.join(RESULTS_DIR, `${algoLower}_energy.json`);
             const bandwidthFile = path.join(RESULTS_DIR, `${algoLower}_bandwidth.json`);
+            
+            console.log(`Expected files:`);
+            console.log(`  - ${latencyFile}`);
+            console.log(`  - ${energyFile}`);
+            console.log(`  - ${bandwidthFile}`);
             const responseTimeFile = path.join(RESULTS_DIR, `${algoLower}_response_time.json`);
             const schedulingTimeFile = path.join(RESULTS_DIR, `${algoLower}_scheduling_time.json`);
             const loadBalanceFile = path.join(RESULTS_DIR, `${algoLower}_load_balance.json`);
