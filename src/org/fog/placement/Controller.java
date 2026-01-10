@@ -115,7 +115,16 @@ public class Controller extends SimEntity{
 			printNetworkUsageDetails();
 			
 			// Export results to JSON files
-			ResultsExporter.exportResults(getFogDevices(), getApplications());
+			System.out.println("=========================================");
+			System.out.println("Controller: Exporting results...");
+			try {
+				ResultsExporter.exportResults(getFogDevices(), getApplications());
+				System.out.println("Controller: Results exported successfully!");
+			} catch (Exception e) {
+				System.err.println("Controller: ERROR exporting results: " + e.getMessage());
+				e.printStackTrace();
+			}
+			System.out.println("=========================================");
 			
 			System.exit(0);
 			break;

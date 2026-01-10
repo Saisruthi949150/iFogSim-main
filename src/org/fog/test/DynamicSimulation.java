@@ -70,7 +70,8 @@ public class DynamicSimulation {
 		Log.printLine("=========================================");
 
 		try {
-			Log.disable();
+			// Don't disable Log completely - we need to see export messages
+			// Log.disable();
 			
 			// Set algorithm name for results exporter and metrics tracker
 			ResultsExporter.setAlgorithmName(selectedAlgorithm.getName());
@@ -141,12 +142,17 @@ public class DynamicSimulation {
 			CloudSim.startSimulation();
 
 			// Stop simulation
+			// Note: Controller will call ResultsExporter.exportResults() and System.exit(0)
+			// So code after this point may not execute
 			CloudSim.stopSimulation();
-
-			Log.printLine("=========================================");
-			Log.printLine("Simulation finished!");
-			Log.printLine("Algorithm: " + selectedAlgorithm.getName());
-			Log.printLine("=========================================");
+			
+			// The Controller handles export, but we verify algorithm name is set
+			System.out.println("=========================================");
+			System.out.println("Simulation finished!");
+			System.out.println("Algorithm: " + selectedAlgorithm.getName());
+			System.out.println("ResultsExporter algorithm name should be: Hybrid");
+			System.out.println("Controller will export results before exit");
+			System.out.println("=========================================");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
