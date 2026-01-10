@@ -490,6 +490,102 @@ tbody tr:nth-child(even) {
     font-size: 0.9em;
 }
 
+/* IoT Data Display */
+.iot-status {
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #e8f4f8;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.iot-data-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.iot-device-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.iot-device-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.iot-device-card h4 {
+    color: #2c3e50;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
+}
+
+.iot-metric {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.iot-metric:last-child {
+    border-bottom: none;
+}
+
+.iot-metric-label {
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+.iot-metric-value {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.iot-timestamp {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e0e0;
+    color: #95a5a6;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+.iot-status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+.iot-status-indicator.active {
+    background: #27ae60;
+}
+
+.iot-status-indicator.inactive {
+    background: #e74c3c;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
 /* Academic Note */
 .academic-note {
     font-size: 0.85em;
@@ -539,5 +635,127 @@ footer {
     
     th, td {
         padding: 8px;
+    }
+}
+
+/* ========================================
+   LIVE IoT DATA FEED STYLES
+   ======================================== */
+
+.iot-data-container {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.iot-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 6px;
+    border-left: 4px solid #95a5a6;
+}
+
+.iot-status-active {
+    border-left-color: #27ae60;
+}
+
+.iot-status-waiting {
+    border-left-color: #f39c12;
+}
+
+#iotStatusText {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.iot-timestamp {
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+.iot-data-display {
+    min-height: 100px;
+}
+
+.iot-devices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.iot-device-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.iot-device-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.iot-device-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.iot-device-header strong {
+    color: #2c3e50;
+    font-size: 1.1em;
+}
+
+.iot-device-time {
+    color: #7f8c8d;
+    font-size: 0.85em;
+}
+
+.iot-device-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.iot-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.iot-metric-label {
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+.iot-metric-value {
+    font-weight: 600;
+    font-size: 1em;
+    color: #2c3e50;
+}
+
+/* Responsive IoT display */
+@media (max-width: 768px) {
+    .iot-devices-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .iot-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 }

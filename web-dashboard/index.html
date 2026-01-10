@@ -138,6 +138,24 @@
             <button class="export-btn" onclick="exportChart('flChart', 'federated-learning')">Export Chart</button>
         </section>
 
+        <!-- Live IoT Data Feed Section -->
+        <section class="dashboard-section">
+            <h2>Live IoT Data Feed</h2>
+            <p class="section-subtitle">Real-time sensor data stream for demonstration. <em>Note: Simulated IoT data used for real-time demonstration. Actual fog scheduling evaluated via iFogSim.</em></p>
+            <div id="iotContainer">
+                <div id="iotStatus" class="iot-status">
+                    <p>Waiting for IoT data...</p>
+                </div>
+                <div id="iotDataDisplay" class="iot-data-display">
+                    <!-- IoT data will be populated here -->
+                </div>
+            </div>
+            <div id="iotInfo" class="info-text"></div>
+            <p style="font-size: 0.85em; color: #7f8c8d; margin-top: 10px; font-style: italic;">
+                Secure data ingestion: no raw data persisted long-term. Data is stored temporarily for demo visualization only.
+            </p>
+        </section>
+
         <!-- Comparison Table -->
         <section class="dashboard-section">
             <h2>Comparison Table</h2>
@@ -163,12 +181,37 @@
             <div id="comparisonInfo" class="info-text"></div>
         </section>
 
+        <!-- Live IoT Data Feed Section -->
+        <section class="dashboard-section">
+            <h2>Live IoT Data Feed</h2>
+            <p class="section-subtitle">Real-time simulated IoT sensor data for demonstration purposes</p>
+            <div id="iotDataContainer" class="iot-data-container">
+                <div id="iotStatus" class="iot-status">
+                    <span id="iotStatusText">Waiting for data...</span>
+                    <span id="iotTimestamp" class="iot-timestamp"></span>
+                </div>
+                <div id="iotDataDisplay" class="iot-data-display">
+                    <p style="color: #7f8c8d; font-style: italic;">Start the IoT data generator to see live sensor data.</p>
+                </div>
+            </div>
+            <div id="iotInfo" class="info-text">
+                <p style="color: #95a5a6; font-size: 0.9em; margin-top: 10px;">
+                    <strong>Note:</strong> Simulated IoT data used for real-time demonstration. 
+                    Actual fog scheduling evaluated via iFogSim simulations above.
+                </p>
+                <p style="color: #95a5a6; font-size: 0.85em; margin-top: 8px;">
+                    <strong>To see live streaming data:</strong> Run <code>node iot-generator.js</code> from the <code>iot-simulator</code> directory. 
+                    Demo data is shown when the generator is not running.
+                </p>
+            </div>
+        </section>
+
         <!-- Results Discussion Section -->
         <section class="dashboard-section">
             <h2>Results Discussion</h2>
-            <p class="section-subtitle">Auto-generated academic discussion based on simulation results</p>
+            <p class="section-subtitle">Real-time insights and performance analysis from live simulation data</p>
             <div id="resultsDiscussion" class="discussion-panel">
-                <p>Run simulations to generate results discussion...</p>
+                <p>Run simulations to see real-time performance insights and comparisons...</p>
             </div>
         </section>
 

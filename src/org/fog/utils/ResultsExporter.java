@@ -70,10 +70,21 @@ public class ResultsExporter {
 	 * @param applications Map of applications
 	 */
 	public static void exportResults(List<FogDevice> fogDevices, Map<String, Application> applications) {
+		// Debug: Log current algorithm name and prefix setting
+		System.out.println("=========================================");
+		System.out.println("ResultsExporter.exportResults() called");
+		System.out.println("Current algorithmName: " + algorithmName);
+		System.out.println("Current useAlgorithmPrefix: " + useAlgorithmPrefix);
+		System.out.println("Results directory: " + resultsDir);
+		System.out.println("=========================================");
+		
 		// Create results directory if it doesn't exist
 		File dir = new File(resultsDir);
 		if (!dir.exists()) {
 			dir.mkdirs();
+			System.out.println("Created results directory: " + resultsDir);
+		} else {
+			System.out.println("Results directory exists: " + resultsDir);
 		}
 		
 		// Register all fog devices with MigrationLogger for name lookup
@@ -148,6 +159,7 @@ public class ResultsExporter {
 		String fileName = useAlgorithmPrefix ? 
 			resultsDir + "/" + algorithmName.toLowerCase() + "_latency.json" :
 			resultsDir + "/latency.json";
+		System.out.println("Exporting latency to: " + fileName);
 		writeJSONFile(fileName, json);
 	}
 	
@@ -188,6 +200,7 @@ public class ResultsExporter {
 		String fileName = useAlgorithmPrefix ? 
 			resultsDir + "/" + algorithmName.toLowerCase() + "_energy.json" :
 			resultsDir + "/energy.json";
+		System.out.println("Exporting energy to: " + fileName);
 		writeJSONFile(fileName, json);
 	}
 	
@@ -218,6 +231,7 @@ public class ResultsExporter {
 		String fileName = useAlgorithmPrefix ? 
 			resultsDir + "/" + algorithmName.toLowerCase() + "_bandwidth.json" :
 			resultsDir + "/bandwidth.json";
+		System.out.println("Exporting bandwidth to: " + fileName);
 		writeJSONFile(fileName, json);
 	}
 	

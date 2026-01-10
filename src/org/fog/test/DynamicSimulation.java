@@ -73,20 +73,31 @@ public class DynamicSimulation {
 			// Don't disable Log completely - we need to see export messages
 			// Log.disable();
 			
+			// Check if FL should be enabled and handle Hybrid BEFORE setting algorithm name
+			boolean enableFL = args.length > 1 && args[1].equalsIgnoreCase("FL");
+			String exportAlgorithmName = selectedAlgorithm.getName(); // Default to selected algorithm name
+			
+			if (selectedAlgorithm == AlgorithmType.HYBRID) {
+				// Hybrid uses GWO placement with FL, but export with "Hybrid" prefix
+				selectedAlgorithm = AlgorithmType.GWO; // Change placement algorithm to GWO
+				exportAlgorithmName = "Hybrid"; // But export files with "Hybrid" prefix
+				enableFL = true; // Force FL for Hybrid
+				System.out.println("=========================================");
+				System.out.println("HYBRID MODE: Using GWO placement, but exporting as 'Hybrid'");
+				System.out.println("Export algorithm name: " + exportAlgorithmName);
+				System.out.println("Placement algorithm: " + selectedAlgorithm.getName());
+				System.out.println("=========================================");
+			}
+			
 			// Set algorithm name for results exporter and metrics tracker
-			ResultsExporter.setAlgorithmName(selectedAlgorithm.getName());
+			// This MUST be called AFTER handling Hybrid, so exportAlgorithmName is correct
+			ResultsExporter.setAlgorithmName(exportAlgorithmName);
 			ResultsExporter.setUseAlgorithmPrefix(true); // Enable algorithm-specific file naming
-			MetricsTracker.getInstance().setAlgorithm(selectedAlgorithm.getName());
+			MetricsTracker.getInstance().setAlgorithm(exportAlgorithmName);
 			MetricsTracker.getInstance().clearMetrics(); // Clear metrics for new run
 			
-			// Check if FL should be enabled
-			boolean enableFL = args.length > 1 && args[1].equalsIgnoreCase("FL");
-			if (selectedAlgorithm == AlgorithmType.HYBRID) {
-				// Hybrid uses GWO placement with FL
-				selectedAlgorithm = AlgorithmType.GWO;
-				ResultsExporter.setAlgorithmName("Hybrid");
-				enableFL = true; // Force FL for Hybrid
-			}
+			System.out.println("ResultsExporter algorithm name set to: " + exportAlgorithmName);
+			System.out.println("ResultsExporter useAlgorithmPrefix: true");
 			
 			// Store FL flag for later initialization
 			final boolean shouldEnableFL = enableFL;

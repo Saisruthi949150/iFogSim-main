@@ -523,7 +523,9 @@ app.get('/', (req, res) => {
             health: '/health',
             runSimulation: 'POST /run-simulation',
             algorithms: 'GET /algorithms',
-            flMetrics: 'GET /api/fl-metrics'
+            flMetrics: 'GET /api/fl-metrics',
+            iotData: 'POST /api/iot-data',
+            iotDataLatest: 'GET /api/iot-data/latest'
         }
     });
 });
@@ -662,6 +664,127 @@ app.get('/api/fl-metrics', (req, res) => {
         res.status(500).json({ 
             error: 'Failed to read FL metrics',
             flEnabled: false
+        });
+    }
+});
+
+// ========================================
+// IoT DATA STREAM (Demo/Exhibition Only)
+// ========================================
+// In-memory storage for IoT data (last 50 records)
+const iotDataStore = [];
+const MAX_IOT_RECORDS = 50;
+const IOT_LOGS_FILE = path.join(RESULTS_DIR, 'iot_logs.json');
+
+/**
+ * POST /api/iot-data
+ * Receives simulated IoT sensor data for real-time demonstration
+ * This is for exhibition/demo purposes only - does not affect iFogSim execution
+ */
+app.post('/api/iot-data', (req, res) => {
+    try {
+        const iotData = req.body;
+        
+        // Validate required fields
+        if (!iotData.deviceId || !iotData.timestamp) {
+            return res.status(400).json({
+                error: 'Invalid IoT data',
+                message: 'deviceId and timestamp are required'
+            });
+        }
+        
+        // Add server-side timestamp
+        iotData.receivedAt = new Date().toISOString();
+        
+        // Store in memory (keep last 50 records)
+        iotDataStore.push(iotData);
+        if (iotDataStore.length > MAX_IOT_RECORDS) {
+            iotDataStore.shift(); // Remove oldest record
+        }
+        
+        // Log to file (append mode)
+        try {
+            let logs = [];
+            if (fs.existsSync(IOT_LOGS_FILE)) {
+                const fileContent = fs.readFileSync(IOT_LOGS_FILE, 'utf8');
+                logs = JSON.parse(fileContent);
+            }
+            logs.push(iotData);
+            // Keep only last 1000 records in file
+            if (logs.length > 1000) {
+                logs = logs.slice(-1000);
+            }
+            fs.writeFileSync(IOT_LOGS_FILE, JSON.stringify(logs, null, 2));
+        } catch (fileError) {
+            console.warn('Could not write IoT log to file:', fileError.message);
+        }
+        
+        // Log to console (demo mode)
+        console.log(`[IoT] ${iotData.deviceId}: temp=${iotData.temperature}°C, cpu=${iotData.cpuLoad}%, data=${iotData.dataSize}KB`);
+        
+        // Security note: Secure data ingestion - no raw data persisted long-term
+        // Data is stored temporarily for demo visualization only
+        if (iotDataStore.length === 1) {
+            console.log('🔒 SECURITY: Secure data ingestion - no raw data persisted long-term. Demo-only runtime data for exhibition purposes.');
+        }
+        
+        res.status(201).json({
+            success: true,
+            message: 'IoT data received',
+            deviceId: iotData.deviceId,
+            timestamp: iotData.receivedAt
+        });
+        
+    } catch (error) {
+        console.error('Error processing IoT data:', error);
+        res.status(500).json({
+            error: 'Failed to process IoT data',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/iot-data/latest
+ * Returns the latest IoT data for dashboard display
+ */
+app.get('/api/iot-data/latest', (req, res) => {
+    try {
+        if (iotDataStore.length === 0) {
+            return res.json({
+                available: false,
+                message: 'No IoT data received yet',
+                latestData: null,
+                deviceCount: 0
+            });
+        }
+        
+        // Get latest data from each device
+        const latestByDevice = {};
+        iotDataStore.forEach(record => {
+            const deviceId = record.deviceId;
+            if (!latestByDevice[deviceId] || 
+                new Date(record.timestamp) > new Date(latestByDevice[deviceId].timestamp)) {
+                latestByDevice[deviceId] = record;
+            }
+        });
+        
+        const latestData = Object.values(latestByDevice);
+        const totalRecords = iotDataStore.length;
+        
+        res.json({
+            available: true,
+            latestData: latestData,
+            deviceCount: latestData.length,
+            totalRecords: totalRecords,
+            lastUpdate: iotDataStore[iotDataStore.length - 1]?.receivedAt || null
+        });
+        
+    } catch (error) {
+        console.error('Error retrieving IoT data:', error);
+        res.status(500).json({
+            error: 'Failed to retrieve IoT data',
+            message: error.message
         });
     }
 });
