@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFogSim Dashboard</title>
+    <link rel="stylesheet" href="style-new.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>iFogSim Dashboard</h1>
+            <p class="subtitle">Real-time Fog Computing Performance Monitoring</p>
+            
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <button id="refreshBtn" class="control-btn">🔄 Refresh</button>
+                <button id="settingsBtn" class="control-btn">⚙️ Settings</button>
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Connected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main class="dashboard-grid">
+            <!-- System Overview Card -->
+            <div class="card system-overview">
+                <div class="card-header">
+                    <h3>System Overview</h3>
+                    <span class="card-icon">🖥️</span>
+                </div>
+                <div class="card-content">
+                    <div class="overview-stats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="totalDevices">12</div>
+                            <div class="stat-label">Total Devices</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="activeNodes">8</div>
+                            <div class="stat-label">Active Nodes</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="systemLoad">67%</div>
+                            <div class="stat-label">System Load</div>
+                        </div>
+                    </div>
+                    <div class="chart-container small">
+                        <canvas id="systemOverviewChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Latency Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Latency</h3>
+                    <span class="card-icon">⏱️</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric-value">
+                        <span id="latencyValue">125</span>
+                        <span class="metric-unit">ms</span>
+                    </div>
+                    <div class="metric-change positive">-12%</div>
+                    <div class="chart-container small">
+                        <canvas id="latencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Energy Consumption Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Energy</h3>
+                    <span class="card-icon">⚡</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric-value">
+                        <span id="energyValue">342</span>
+                        <span class="metric-unit">kWh</span>
+                    </div>
+                    <div class="metric-change negative">+8%</div>
+                    <div class="chart-container small">
+                        <canvas id="energyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bandwidth Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Bandwidth</h3>
+                    <span class="card-icon">📡</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric-value">
+                        <span id="bandwidthValue">1.2</span>
+                        <span class="metric-unit">GB/s</span>
+                    </div>
+                    <div class="metric-change positive">-5%</div>
+                    <div class="chart-container small">
+                        <canvas id="bandwidthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response Time Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Response Time</h3>
+                    <span class="card-icon">🚀</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric-value">
+                        <span id="responseTimeValue">89</span>
+                        <span class="metric-unit">ms</span>
+                    </div>
+                    <div class="metric-change positive">-15%</div>
+                    <div class="chart-container small">
+                        <canvas id="responseTimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IoT Sensor Data Card -->
+            <div class="card iot-card">
+                <div class="card-header">
+                    <h3>IoT Sensors</h3>
+                    <span class="card-icon">🌐</span>
+                </div>
+                <div class="card-content">
+                    <div class="iot-grid">
+                        <div class="iot-sensor">
+                            <div class="sensor-icon">🌡️</div>
+                            <div class="sensor-value" id="tempValue">24.5°C</div>
+                            <div class="sensor-label">Temperature</div>
+                        </div>
+                        <div class="iot-sensor">
+                            <div class="sensor-icon">💧</div>
+                            <div class="sensor-value" id="humidityValue">65%</div>
+                            <div class="sensor-label">Humidity</div>
+                        </div>
+                        <div class="iot-sensor">
+                            <div class="sensor-icon">📊</div>
+                            <div class="sensor-value" id="pressureValue">1013</div>
+                            <div class="sensor-label">Pressure</div>
+                        </div>
+                        <div class="iot-sensor">
+                            <div class="sensor-icon">💡</div>
+                            <div class="sensor-value" id="lightValue">450</div>
+                            <div class="sensor-label">Light</div>
+                        </div>
+                        <div class="iot-sensor">
+                            <div class="sensor-icon">🎯</div>
+                            <div class="sensor-value" id="motionValue">12</div>
+                            <div class="sensor-label">Motion</div>
+                        </div>
+                        <div class="iot-sensor">
+                            <div class="sensor-icon">🌬️</div>
+                            <div class="sensor-value" id="airQualityValue">85</div>
+                            <div class="sensor-label">Air Quality</div>
+                        </div>
+                    </div>
+                    <div class="iot-controls">
+                        <button class="iot-btn" onclick="updateIoTDataNow()">Update Now</button>
+                        <div class="update-info">
+                            Last: <span id="iotLastUpdate">2 min ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Algorithm Performance Card -->
+            <div class="card wide">
+                <div class="card-header">
+                    <h3>Algorithm Performance</h3>
+                    <span class="card-icon">📈</span>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="algorithmChart"></canvas>
+                    </div>
+                    <div class="algorithm-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #3498db;"></span>
+                            <span>Baseline</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #2ecc71;"></span>
+                            <span>SCPSO</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f1c40f;"></span>
+                            <span>SCCSO</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #e74c3c;"></span>
+                            <span>GWO</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #9b59b6;"></span>
+                            <span>Hybrid</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load Balancing Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Load Balance</h3>
+                    <span class="card-icon">⚖️</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric-value">
+                        <span id="loadBalanceValue">92</span>
+                        <span class="metric-unit">%</span>
+                    </div>
+                    <div class="metric-change positive">+3%</div>
+                    <div class="chart-container small">
+                        <canvas id="loadBalanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduling Time Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Scheduling</h3>
+                    <span class="card-icon">🔄</span>
+                </div>
+                <div class="card-content">
+                    <div class="metric-value">
+                        <span id="schedulingTimeValue">45</span>
+                        <span class="metric-unit">ms</span>
+                    </div>
+                    <div class="metric-change positive">-8%</div>
+                    <div class="chart-container small">
+                        <canvas id="schedulingTimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Federated Learning Card -->
+            <div class="card wide">
+                <div class="card-header">
+                    <h3>Federated Learning</h3>
+                    <span class="card-icon">🧠</span>
+                </div>
+                <div class="card-content">
+                    <div class="fl-stats">
+                        <div class="fl-stat">
+                            <div class="fl-value" id="flAccuracy">94.2%</div>
+                            <div class="fl-label">Accuracy</div>
+                        </div>
+                        <div class="fl-stat">
+                            <div class="fl-value" id="flNodes">6</div>
+                            <div class="fl-label">Nodes</div>
+                        </div>
+                        <div class="fl-stat">
+                            <div class="fl-value" id="flRounds">12</div>
+                            <div class="fl-label">Rounds</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="flChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Algorithm Comparison Card -->
+            <div class="card wide">
+                <div class="card-header">
+                    <h3>Algorithm Comparison</h3>
+                    <span class="card-icon">📊</span>
+                </div>
+                <div class="card-content">
+                    <div class="comparison-controls">
+                        <select id="metricSelect" class="metric-selector">
+                            <option value="all">All Metrics</option>
+                            <option value="latency">Latency (ms)</option>
+                            <option value="energy">Energy (kWh)</option>
+                            <option value="bandwidth">Bandwidth (GB/s)</option>
+                            <option value="responseTime">Response Time (ms)</option>
+                            <option value="schedulingTime">Scheduling Time (ms)</option>
+                            <option value="loadBalance">Load Balance (%)</option>
+                        </select>
+                        <button class="comparison-btn" onclick="updateComparisonChart()">Update</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                    <div class="comparison-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #3498db;"></span>
+                            <span>Baseline</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #2ecc71;"></span>
+                            <span>SCPSO</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #f1c40f;"></span>
+                            <span>SCCSO</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #e74c3c;"></span>
+                            <span>GWO</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background: #9b59b6;"></span>
+                            <span>Hybrid</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Topology Card -->
+            <div class="card wide">
+                <div class="card-header">
+                    <h3>Network Topology</h3>
+                    <span class="card-icon">🌐</span>
+                </div>
+                <div class="card-content">
+                    <div class="topology-container">
+                        <canvas id="topologyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-info">
+                <span>iFogSim Dashboard v2.0</span>
+                <span>|</span>
+                <span id="lastUpdate">Last updated: Just now</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script-new.js"></script>
+</body>
+</html>

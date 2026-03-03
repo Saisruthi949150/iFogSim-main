@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFogSim2 - Live IoT Algorithm Dashboard</title>
+    <link rel="stylesheet" href="style-new.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .unified-dashboard {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .dashboard-header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .chart-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .chart-icon {
+            font-size: 1.2em;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin-bottom: 10px;
+        }
+        
+        .chart-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        
+        .best-algorithm {
+            font-weight: 600;
+            color: #27ae60;
+        }
+        
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 20px;
+            margin-left: 10px;
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #27ae60;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .summary-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 1400px) {
+            .charts-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .summary-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            .summary-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="unified-dashboard">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1>🌐 iFogSim2 - Live IoT Algorithm Dashboard</h1>
+            <p>Advanced Fog Computing Simulation Framework</p>
+            <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">Real-time fog computing performance monitoring with live sensor data integration</p>
+            
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span>Live IoT Data</span>
+                <span>|</span>
+                <span id="updateTime">Just now</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="control-btn" onclick="updateAllCharts()">🔄 Update Now</button>
+            <button class="control-btn" onclick="toggleAutoUpdate()">
+                <span id="autoUpdateText">⏸️ Pause Auto</span>
+            </button>
+            <button class="control-btn" onclick="exportData()">📊 Export Data</button>
+        </div>
+
+        <!-- Summary Row -->
+        <div class="summary-row">
+            <div class="summary-card">
+                <div class="summary-title">🌡️ Temperature</div>
+                <div class="summary-value" id="tempSummary">24.5°C</div>
+                <div class="summary-label">Current Reading</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-title">🏆 Best Algorithm</div>
+                <div class="summary-value" id="bestAlgorithm">Hybrid</div>
+                <div class="summary-label">Overall Performance</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-title">⚡ System Load</div>
+                <div class="summary-value" id="systemLoad">67%</div>
+                <div class="summary-label">Current Status</div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-container">
+            <!-- Latency Chart -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <span>⏱️ Latency</span>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>Live</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="latencyChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <span>Unit: ms</span>
+                    <span class="best-algorithm" id="latencyBest">Best: Hybrid</span>
+                </div>
+            </div>
+
+            <!-- Energy Chart -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <span>⚡ Energy</span>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>Live</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="energyChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <span>Unit: kWh</span>
+                    <span class="best-algorithm" id="energyBest">Best: Hybrid</span>
+                </div>
+            </div>
+
+            <!-- Bandwidth Chart -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <span>📡 Bandwidth</span>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>Live</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="bandwidthChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <span>Unit: GB/s</span>
+                    <span class="best-algorithm" id="bandwidthBest">Best: Hybrid</span>
+                </div>
+            </div>
+
+            <!-- Response Time Chart -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <span>🚀 Response Time</span>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>Live</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="responseTimeChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <span>Unit: ms</span>
+                    <span class="best-algorithm" id="responseTimeBest">Best: Hybrid</span>
+                </div>
+            </div>
+
+            <!-- Scheduling Time Chart -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <span>🔄 Scheduling</span>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>Live</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="schedulingTimeChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <span>Unit: ms</span>
+                    <span class="best-algorithm" id="schedulingTimeBest">Best: Hybrid</span>
+                </div>
+            </div>
+
+            <!-- Load Balance Chart -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <span>⚖️ Load Balance</span>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>Live</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="loadBalanceChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <span>Unit: %</span>
+                    <span class="best-algorithm" id="loadBalanceBest">Best: Hybrid</span>
+                </div>
+            </div>
+
+            <!-- Federated Learning Chart -->
+            <div class="chart-card">
+                <div class="chart-title">
+                    <span>🧠 Federated Learning</span>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span>Live</span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="flChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <span>Accuracy: <span id="flAccuracy">94.2%</span></span>
+                    <span class="best-algorithm" id="flBest">Best: Hybrid</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="unified-script.js"></script>
+</body>
+</html>

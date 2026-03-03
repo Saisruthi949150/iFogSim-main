@@ -118,7 +118,7 @@ public class Controller extends SimEntity{
 			System.out.println("=========================================");
 			System.out.println("Controller: Exporting results...");
 			try {
-				ResultsExporter.exportResults(getFogDevices(), getApplications());
+			ResultsExporter.exportResults(getFogDevices(), getApplications());
 				System.out.println("Controller: Results exported successfully!");
 			} catch (Exception e) {
 				System.err.println("Controller: ERROR exporting results: " + e.getMessage());

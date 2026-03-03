@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        canvas {
+            max-width: 100%;
+            height: 400px !important;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Algorithm Performance Chart Test</h1>
+        <p>This is a simple test page to verify Chart.js is working properly.</p>
+        
+        <button onclick="createChart()">Create Chart</button>
+        <button onclick="destroyChart()">Destroy Chart</button>
+        
+        <canvas id="testChart"></canvas>
+        
+        <div id="info"></div>
+    </div>
+
+    <script>
+        let chart = null;
+        
+        function createChart() {
+            console.log('Creating chart...');
+            document.getElementById('info').innerHTML = '<p>Creating chart...</p>';
+            
+            try {
+                const ctx = document.getElementById('testChart').getContext('2d');
+                
+                if (chart) {
+                    chart.destroy();
+                }
+                
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['0', '10', '20', '30', '40', '50', '60', '70', '80', '90', '100'],
+                        datasets: [
+                            {
+                                label: 'Baseline',
+                                data: [125, 127, 123, 126, 124, 128, 122, 125, 127, 124, 126],
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                pointRadius: 4
+                            },
+                            {
+                                label: 'SCPSO',
+                                data: [106, 108, 104, 107, 105, 109, 103, 106, 108, 105, 107],
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                pointRadius: 4
+                            },
+                            {
+                                label: 'SCCSO',
+                                data: [138, 140, 136, 139, 137, 141, 135, 138, 140, 137, 139],
+                                borderColor: '#f39c12',
+                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                pointRadius: 4
+                            },
+                            {
+                                label: 'GWO',
+                                data: [119, 121, 117, 120, 118, 122, 116, 119, 121, 118, 120],
+                                borderColor: '#2ecc71',
+                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                pointRadius: 4
+                            },
+                            {
+                                label: 'Hybrid',
+                                data: [100, 102, 98, 101, 99, 103, 97, 100, 102, 99, 101],
+                                borderColor: '#9b59b6',
+                                backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4,
+                                pointRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: '🚀 Algorithm Performance Comparison',
+                                font: {
+                                    size: 18,
+                                    weight: 'bold'
+                                }
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 80,
+                                max: 150,
+                                title: {
+                                    display: true,
+                                    text: 'Latency (ms)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time (seconds)'
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                console.log('✅ Chart created successfully!');
+                document.getElementById('info').innerHTML = '<p style="color: green;">✅ Chart created successfully!</p>';
+                
+            } catch (error) {
+                console.error('❌ Error creating chart:', error);
+                document.getElementById('info').innerHTML = '<p style="color: red;">❌ Error: ' + error.message + '</p>';
+            }
+        }
+        
+        function destroyChart() {
+            if (chart) {
+                chart.destroy();
+                chart = null;
+                console.log('Chart destroyed');
+                document.getElementById('info').innerHTML = '<p>Chart destroyed</p>';
+            }
+        }
+        
+        // Auto-create chart when page loads
+        window.onload = function() {
+            console.log('Page loaded, creating chart...');
+            setTimeout(createChart, 1000);
+        };
+    </script>
+</body>
+</html>

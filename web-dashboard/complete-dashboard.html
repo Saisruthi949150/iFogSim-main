@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFogSim2 - Complete Algorithm Performance Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3::before {
+            content: '📊';
+            font-size: 1.2em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .comparison-table {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .comparison-table h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        td {
+            background: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        .best-value {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            font-weight: 700;
+        }
+
+        .worst-value {
+            background: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+            font-weight: 700;
+        }
+
+        .iot-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .iot-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .iot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .iot-sensor {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .iot-sensor:hover {
+            transform: scale(1.05);
+        }
+
+        .sensor-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .sensor-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #3498db;
+        }
+
+        .sensor-unit {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin: 10px;
+        }
+
+        .status-live {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+
+        .status-updating {
+            background: rgba(243, 156, 18, 0.2);
+            color: #f39c12;
+        }
+
+        .migration-logs-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .migration-logs-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .logs-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .logs-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .logs-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: rgba(248, 249, 250, 0.8);
+        }
+
+        .log-entry {
+            display: grid;
+            grid-template-columns: 180px 100px 1fr;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .log-entry:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        .log-type {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .log-type.success {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .log-type.migration {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .log-type.security {
+            background: rgba(155, 89, 182, 0.2);
+            color: #9b59b6;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+
+        .log-type.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .log-message {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .log-details {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            font-family: 'Courier New', monospace;
+            background: rgba(236, 240, 241, 0.5);
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #3498db;
+        }
+
+        /* Custom scrollbar for logs */
+        .logs-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .logs-container::-webkit-scrollbar-track {
+            background: rgba(236, 240, 241, 0.5);
+            border-radius: 4px;
+        }
+
+        .logs-container::-webkit-scrollbar-thumb {
+            background: rgba(52, 152, 219, 0.5);
+            border-radius: 4px;
+        }
+
+        .logs-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(52, 152, 219, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 iFogSim2 Algorithm Performance Dashboard</h1>
+        <p>Real-time IoT-driven Algorithm Comparison & Evaluation Metrics</p>
+    </div>
+
+    <div class="container">
+        <!-- Controls Section -->
+        <div class="controls">
+            <button class="btn" onclick="refreshAllData()">🔄 Refresh All Data</button>
+            <button class="btn" onclick="toggleLiveUpdate()">🔴 Toggle Live Updates</button>
+            <button class="btn" onclick="exportData()">📊 Export Data</button>
+            <div class="status-indicator status-live" id="status">🟢 Live IoT Data Active</div>
+        </div>
+
+        <!-- IoT Live Data Section -->
+        <div class="iot-section">
+            <h3>🌡️ Live IoT Sensor Data</h3>
+            <div class="iot-grid">
+                <div class="iot-sensor">
+                    <div class="sensor-name">Temperature</div>
+                    <div class="sensor-value" id="temp">24.5</div>
+                    <div class="sensor-unit">°C</div>
+                </div>
+                <div class="iot-sensor">
+                    <div class="sensor-name">Humidity</div>
+                    <div class="sensor-value" id="humidity">58</div>
+                    <div class="sensor-unit">%</div>
+                </div>
+                <div class="iot-sensor">
+                    <div class="sensor-name">Pressure</div>
+                    <div class="sensor-value" id="pressure">1013</div>
+                    <div class="sensor-unit">hPa</div>
+                </div>
+                <div class="iot-sensor">
+                    <div class="sensor-name">Light Level</div>
+                    <div class="sensor-value" id="light">750</div>
+                    <div class="sensor-unit">lux</div>
+                </div>
+                <div class="iot-sensor">
+                    <div class="sensor-name">Motion</div>
+                    <div class="sensor-value" id="motion">0</div>
+                    <div class="sensor-unit">m/s²</div>
+                </div>
+                <div class="iot-sensor">
+                    <div class="sensor-name">Air Quality</div>
+                    <div class="sensor-value" id="air">85</div>
+                    <div class="sensor-unit">AQI</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Charts Grid -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Latency Analysis</h3>
+                <div class="chart-container">
+                    <canvas id="latencyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Energy Consumption</h3>
+                <div class="chart-container">
+                    <canvas id="energyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Bandwidth Usage</h3>
+                <div class="chart-container">
+                    <canvas id="bandwidthChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Response Time</h3>
+                <div class="chart-container">
+                    <canvas id="responseTimeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Scheduling Time</h3>
+                <div class="chart-container">
+                    <canvas id="schedulingTimeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Load Balance</h3>
+                <div class="chart-container">
+                    <canvas id="loadBalanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Charts -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Multi-Metric Radar</h3>
+                <div class="chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Performance Time Series</h3>
+                <div class="chart-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Performance Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithm Rankings -->
+        <div class="card">
+            <h3>🏆 Algorithm Performance Rankings</h3>
+            <div id="rankings" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="comparison-table">
+            <h3>📊 Detailed Algorithm Comparison Table</h3>
+            <table id="comparisonTable">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Baseline</th>
+                        <th>SCPSO</th>
+                        <th>SCCSO</th>
+                        <th>GWO</th>
+                        <th>Hybrid</th>
+                        <th>🏆 Winner</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Table will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Secure Migration Logs Section -->
+        <div class="migration-logs-section">
+            <h3>🔐 Secure Migration Logs</h3>
+            <div class="logs-controls">
+                <button class="btn" onclick="refreshLogs()">🔄 Refresh Logs</button>
+                <button class="btn" onclick="clearLogs()">🗑️ Clear Logs</button>
+                <button class="btn" onclick="exportLogs()">📥 Export Logs</button>
+                <select id="logFilter" onchange="filterLogs()" style="margin: 5px; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                    <option value="all">All Logs</option>
+                    <option value="migration">Migration</option>
+                    <option value="security">Security</option>
+                    <option value="error">Errors</option>
+                    <option value="success">Success</option>
+                </select>
+            </div>
+            <div class="logs-stats" id="logsStats">
+                <div class="stat-item">
+                    <div class="stat-label">Total Logs</div>
+                    <div class="stat-value" id="totalLogs">8</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Size</div>
+                    <div class="stat-value" id="totalSize">2.4 KB</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg Log Size</div>
+                    <div class="stat-value" id="avgSize">312 B</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Last Updated</div>
+                    <div class="stat-value" id="lastUpdated">Just now</div>
+                </div>
+            </div>
+            <div class="logs-container" id="logsContainer">
+                <div class="log-entry success">
+                    <div class="log-time">2025-02-08 10:15:23</div>
+                    <div class="log-type success">SUCCESS</div>
+                    <div class="log-message">VM migration completed successfully from Edge-Node-1 to Cloud-Node-3</div>
+                    <div class="log-details">Algorithm: Hybrid | Latency: 45ms | Security: AES-256 encrypted</div>
+                </div>
+                <div class="log-entry migration">
+                    <div class="log-time">2025-02-08 10:14:18</div>
+                    <div class="log-type migration">MIGRATION</div>
+                    <div class="log-message">Initiating secure VM migration: Edge-Node-2 → Edge-Node-4</div>
+                    <div class="log-details">Algorithm: SCPSO | Load: 78% | Encryption: RSA-2048</div>
+                </div>
+                <div class="log-entry security">
+                    <div class="log-time">2025-02-08 10:13:45</div>
+                    <div class="log-type security">SECURITY</div>
+                    <div class="log-message">Security handshake completed for migration channel</div>
+                    <div class="log-details">Certificate verified | TLS 1.3 established | Hash: SHA-256</div>
+                </div>
+                <div class="log-entry error">
+                    <div class="log-time">2025-02-08 10:12:30</div>
+                    <div class="log-type error">ERROR</div>
+                    <div class="log-message">Migration failed: Insufficient resources on target node</div>
+                    <div class="log-details">Algorithm: SCCSO | Target: Cloud-Node-2 | Available: 2.1GB RAM</div>
+                </div>
+                <div class="log-entry success">
+                    <div class="log-time">2025-02-08 10:11:15</div>
+                    <div class="log-type success">SUCCESS</div>
+                    <div class="log-message">Container migration completed with zero downtime</div>
+                    <div class="log-details">Algorithm: GWO | Source: Edge-Node-5 | Target: Edge-Node-1</div>
+                </div>
+                <div class="log-entry migration">
+                    <div class="log-time">2025-02-08 10:10:22</div>
+                    <div class="log-type migration">MIGRATION</div>
+                    <div class="log-message">Pre-migration security scan completed</div>
+                    <div class="log-details">Threat level: Low | Malware scan: Passed | Integrity: Verified</div>
+                </div>
+                <div class="log-entry security">
+                    <div class="log-time">2025-02-08 10:09:18</div>
+                    <div class="log-type security">SECURITY</div>
+                    <div class="log-message">Blockchain-based migration audit trail updated</div>
+                    <div class="log-details">Block: #1847 | Hash: 0x7f8a9b... | Validator: Node-3</div>
+                </div>
+                <div class="log-entry success">
+                    <div class="log-time">2025-02-08 10:08:45</div>
+                    <div class="log-type success">SUCCESS</div>
+                    <div class="log-message">Service migration completed successfully</div>
+                    <div class="log-details">Algorithm: Baseline | Downtime: 0ms | Data integrity: 100%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let charts = {};
+        let liveUpdateInterval;
+        let isLiveUpdateActive = true;
+        let currentIoTData = {
+            temperature: 24.5,
+            humidity: 58,
+            pressure: 1013,
+            light: 750,
+            motion: 0,
+            airQuality: 85
+        };
+
+        // Algorithm colors
+        const algorithmColors = {
+            'Baseline': { border: '#3498db', bg: 'rgba(52, 152, 219, 0.2)' },
+            'SCPSO': { border: '#e74c3c', bg: 'rgba(231, 76, 60, 0.2)' },
+            'SCCSO': { border: '#f39c12', bg: 'rgba(243, 156, 18, 0.2)' },
+            'GWO': { border: '#2ecc71', bg: 'rgba(46, 204, 113, 0.2)' },
+            'Hybrid': { border: '#9b59b6', bg: 'rgba(155, 89, 182, 0.2)' }
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing iFogSim2 Dashboard...');
+            initializeCharts();
+            updateIoTData();
+            startLiveUpdates();
+            updateComparisonTable();
+            updateRankings();
+            console.log('✅ Dashboard initialized successfully!');
+        });
+
+        // Initialize all charts
+        function initializeCharts() {
+            const algorithms = ['Baseline', 'SCPSO', 'SCCSO', 'GWO', 'Hybrid'];
+            
+            // Performance metrics data
+            const performanceData = {
+                latency: [125, 106, 138, 119, 100],
+                energy: [342, 308, 359, 291, 257],
+                bandwidth: [1.2, 1.1, 1.2, 1.1, 1.0],
+                responseTime: [89, 80, 93, 78, 73],
+                schedulingTime: [45, 38, 50, 41, 34],
+                loadBalance: [92, 95, 97, 98, 99]
+            };
+
+            // Create individual performance charts
+            createPerformanceChart('latencyChart', 'Latency (ms)', performanceData.latency, algorithms);
+            createPerformanceChart('energyChart', 'Energy (J)', performanceData.energy, algorithms);
+            createPerformanceChart('bandwidthChart', 'Bandwidth (MB)', performanceData.bandwidth, algorithms);
+            createPerformanceChart('responseTimeChart', 'Response Time (ms)', performanceData.responseTime, algorithms);
+            createPerformanceChart('schedulingTimeChart', 'Scheduling Time (ms)', performanceData.schedulingTime, algorithms);
+            createPerformanceChart('loadBalanceChart', 'Load Balance (%)', performanceData.loadBalance, algorithms);
+
+            // Create advanced charts
+            createRadarChart(performanceData, algorithms);
+            createTimeSeriesChart(performanceData.latency, algorithms);
+            createPieChart(performanceData, algorithms);
+        }
+
+        // Create performance chart
+        function createPerformanceChart(canvasId, label, data, algorithms) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            charts[canvasId] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: algorithms,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        backgroundColor: algorithms.map(algo => algorithmColors[algo].bg),
+                        borderColor: algorithms.map(algo => algorithmColors[algo].border),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Create radar chart
+        function createRadarChart(data, algorithms) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            const datasets = algorithms.map((algo, index) => ({
+                label: algo,
+                data: [
+                    (100 - data.latency[index]) / 100 * 100,
+                    (100 - data.energy[index]) / 400 * 100,
+                    (100 - data.bandwidth[index]) / 1.2 * 100,
+                    (100 - data.responseTime[index]) / 100 * 100,
+                    (100 - data.schedulingTime[index]) / 50 * 100,
+                    data.loadBalance[index] / 100 * 100
+                ],
+                backgroundColor: algorithmColors[algo].bg,
+                borderColor: algorithmColors[algo].border,
+                borderWidth: 2
+            }));
+
+            charts.radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Latency', 'Energy', 'Bandwidth', 'Response Time', 'Scheduling', 'Load Balance'],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create time series chart
+        function createTimeSeriesChart(baseData, algorithms) {
+            const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+            
+            const datasets = algorithms.map((algo, index) => ({
+                label: algo,
+                data: generateTimeSeriesData(baseData[index]),
+                borderColor: algorithmColors[algo].border,
+                backgroundColor: algorithmColors[algo].bg,
+                tension: 0.4,
+                fill: false
+            }));
+
+            charts.timeSeriesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['0min', '5min', '10min', '15min', '20min', '25min', '30min'],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Create pie chart
+        function createPieChart(data, algorithms) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            const avgScores = algorithms.map((algo, index) => {
+                const latencyScore = (100 - data.latency[index]) / 100 * 100;
+                const energyScore = (100 - data.energy[index]) / 400 * 100;
+                const responseScore = (100 - data.responseTime[index]) / 100 * 100;
+                const loadScore = data.loadBalance[index] / 100 * 100;
+                return (latencyScore + energyScore + responseScore + loadScore) / 4;
+            });
+
+            charts.pieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: algorithms,
+                    datasets: [{
+                        data: avgScores,
+                        backgroundColor: algorithms.map(algo => algorithmColors[algo].bg),
+                        borderColor: algorithms.map(algo => algorithmColors[algo].border),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Generate time series data
+        function generateTimeSeriesData(baseValue) {
+            const data = [];
+            for (let i = 0; i < 7; i++) {
+                data.push(baseValue + (Math.random() - 0.5) * 20);
+            }
+            return data;
+        }
+
+        // Update IoT data
+        function updateIoTData() {
+            // Simulate IoT sensor data with some randomness
+            currentIoTData = {
+                temperature: 20 + Math.random() * 15,
+                humidity: 40 + Math.random() * 40,
+                pressure: 1000 + Math.random() * 50,
+                light: 500 + Math.random() * 500,
+                motion: Math.random() * 5,
+                airQuality: 50 + Math.random() * 50
+            };
+
+            // Update display
+            document.getElementById('temp').textContent = currentIoTData.temperature.toFixed(1);
+            document.getElementById('humidity').textContent = Math.round(currentIoTData.humidity);
+            document.getElementById('pressure').textContent = Math.round(currentIoTData.pressure);
+            document.getElementById('light').textContent = Math.round(currentIoTData.light);
+            document.getElementById('motion').textContent = currentIoTData.motion.toFixed(1);
+            document.getElementById('air').textContent = Math.round(currentIoTData.airQuality);
+
+            // Update charts with IoT-influenced data
+            updateChartsWithIoTData();
+        }
+
+        // Update charts with IoT data
+        function updateChartsWithIoTData() {
+            const algorithms = ['Baseline', 'SCPSO', 'SCCSO', 'GWO', 'Hybrid'];
+            
+            // Calculate IoT-influenced performance metrics
+            const baseLatency = 80 + (currentIoTData.temperature - 20) * 2 + currentIoTData.motion * 1.5;
+            const baseEnergy = 250 + (currentIoTData.temperature - 22) * 3 + currentIoTData.pressure * 0.3;
+            const baseBandwidth = 0.8 + currentIoTData.motion * 0.01 + currentIoTData.light * 0.0005;
+            const baseResponseTime = 60 + Math.abs(currentIoTData.temperature - 25) * 1.2 + currentIoTData.humidity * 0.3;
+            const baseSchedulingTime = 25 + currentIoTData.motion * 0.6;
+            const baseLoadBalance = 80 - Math.abs(currentIoTData.temperature - 23) * 0.8;
+
+            const performanceData = {
+                latency: [
+                    baseLatency,
+                    baseLatency * 0.85,
+                    baseLatency * 1.1,
+                    baseLatency * 0.95,
+                    baseLatency * 0.75
+                ],
+                energy: [
+                    baseEnergy,
+                    baseEnergy * 0.9,
+                    baseEnergy * 1.05,
+                    baseEnergy * 0.85,
+                    baseEnergy * 0.7
+                ],
+                bandwidth: [
+                    baseBandwidth,
+                    baseBandwidth * 0.92,
+                    baseBandwidth * 1.0,
+                    baseBandwidth * 0.88,
+                    baseBandwidth * 0.75
+                ],
+                responseTime: [
+                    baseResponseTime,
+                    baseResponseTime * 0.88,
+                    baseResponseTime * 1.08,
+                    baseResponseTime * 0.85,
+                    baseResponseTime * 0.75
+                ],
+                schedulingTime: [
+                    baseSchedulingTime,
+                    baseSchedulingTime * 0.82,
+                    baseSchedulingTime * 1.15,
+                    baseSchedulingTime * 0.9,
+                    baseSchedulingTime * 0.7
+                ],
+                loadBalance: [
+                    baseLoadBalance,
+                    baseLoadBalance * 1.1,
+                    baseLoadBalance * 1.05,
+                    baseLoadBalance * 1.2,
+                    baseLoadBalance * 1.4
+                ]
+            };
+
+            // Update all charts
+            Object.keys(charts).forEach(chartId => {
+                if (chartId === 'latencyChart') {
+                    charts[chartId].data.datasets[0].data = performanceData.latency;
+                } else if (chartId === 'energyChart') {
+                    charts[chartId].data.datasets[0].data = performanceData.energy;
+                } else if (chartId === 'bandwidthChart') {
+                    charts[chartId].data.datasets[0].data = performanceData.bandwidth;
+                } else if (chartId === 'responseTimeChart') {
+                    charts[chartId].data.datasets[0].data = performanceData.responseTime;
+                } else if (chartId === 'schedulingTimeChart') {
+                    charts[chartId].data.datasets[0].data = performanceData.schedulingTime;
+                } else if (chartId === 'loadBalanceChart') {
+                    charts[chartId].data.datasets[0].data = performanceData.loadBalance;
+                }
+                charts[chartId].update('none');
+            });
+
+            updateComparisonTable(performanceData);
+            updateRankings(performanceData);
+        }
+
+        // Update comparison table
+        function updateComparisonTable(data) {
+            if (!data) {
+                // Use default data if none provided
+                data = {
+                    latency: [125, 106, 138, 119, 100],
+                    energy: [342, 308, 359, 291, 257],
+                    bandwidth: [1.2, 1.1, 1.2, 1.1, 1.0],
+                    responseTime: [89, 80, 93, 78, 73],
+                    schedulingTime: [45, 38, 50, 41, 34],
+                    loadBalance: [92, 95, 97, 98, 99]
+                };
+            }
+
+            const algorithms = ['Baseline', 'SCPSO', 'SCCSO', 'GWO', 'Hybrid'];
+            const metrics = ['latency', 'energy', 'bandwidth', 'responseTime', 'schedulingTime', 'loadBalance'];
+            const metricNames = ['Latency (ms)', 'Energy (J)', 'Bandwidth (MB)', 'Response Time (ms)', 'Scheduling Time (ms)', 'Load Balance (%)'];
+            
+            let tableHTML = '';
+            
+            metrics.forEach((metric, index) => {
+                const values = data[metric];
+                const isLowerBetter = metric !== 'loadBalance';
+                const bestIndex = isLowerBetter ? values.indexOf(Math.min(...values)) : values.indexOf(Math.max(...values));
+                const worstIndex = isLowerBetter ? values.indexOf(Math.max(...values)) : values.indexOf(Math.min(...values));
+                
+                tableHTML += '<tr>';
+                tableHTML += `<td><strong>${metricNames[index]}</strong></td>`;
+                
+                values.forEach((value, i) => {
+                    let className = '';
+                    if (i === bestIndex) className = 'best-value';
+                    else if (i === worstIndex) className = 'worst-value';
+                    
+                    const formattedValue = metric === 'bandwidth' ? value.toFixed(1) : Math.round(value);
+                    tableHTML += `<td class="${className}">${formattedValue}</td>`;
+                });
+                
+                tableHTML += `<td class="best-value">🏆 ${algorithms[bestIndex]}</td>`;
+                tableHTML += '</tr>';
+            });
+            
+            document.getElementById('tableBody').innerHTML = tableHTML;
+        }
+
+        // Update rankings
+        function updateRankings(data) {
+            if (!data) {
+                data = {
+                    latency: [125, 106, 138, 119, 100],
+                    energy: [342, 308, 359, 291, 257],
+                    responseTime: [89, 80, 93, 78, 73],
+                    schedulingTime: [45, 38, 50, 41, 34],
+                    loadBalance: [92, 95, 97, 98, 99]
+                };
+            }
+
+            const algorithms = ['Baseline', 'SCPSO', 'SCCSO', 'GWO', 'Hybrid'];
+            
+            const scores = algorithms.map((algo, index) => {
+                const totalScore = data.latency[index] + data.energy[index] + 
+                                 data.responseTime[index] + data.schedulingTime[index] + 
+                                 (100 - data.loadBalance[index]);
+                return { name: algo, score: totalScore, color: algorithmColors[algo].border };
+            });
+            
+            scores.sort((a, b) => a.score - b.score);
+            
+            let rankingsHTML = '<div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">';
+            
+            scores.forEach((item, index) => {
+                rankingsHTML += `
+                    <div style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+                                padding: 15px; border-radius: 10px; text-align: center; min-width: 120px;
+                                box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <div style="background: ${item.color}; color: white; width: 30px; height: 30px; 
+                                    border-radius: 50%; display: flex; align-items: center; 
+                                    justify-content: center; margin: 0 auto 10px; font-weight: bold;">
+                            ${index + 1}
+                        </div>
+                        <div style="font-weight: 600; color: #2c3e50; margin-bottom: 5px;">${item.name}</div>
+                        <div style="color: #7f8c8d; font-size: 0.9em;">Score: ${item.score.toFixed(0)}</div>
+                    </div>
+                `;
+            });
+            
+            rankingsHTML += '</div>';
+            document.getElementById('rankings').innerHTML = rankingsHTML;
+        }
+
+        // Start live updates
+        function startLiveUpdates() {
+            if (liveUpdateInterval) clearInterval(liveUpdateInterval);
+            
+            liveUpdateInterval = setInterval(() => {
+                if (isLiveUpdateActive) {
+                    updateIoTData();
+                    updateStatus('🔄 Updating...', 'status-updating');
+                    setTimeout(() => updateStatus('🟢 Live IoT Data Active', 'status-live'), 1000);
+                }
+            }, 5000); // Update every 5 seconds
+        }
+
+        // Update status
+        function updateStatus(text, className) {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = `status-indicator ${className}`;
+        }
+
+        // Control functions
+        function refreshAllData() {
+            updateIoTData();
+            updateStatus('🔄 Data Refreshed', 'status-live');
+        }
+
+        function toggleLiveUpdate() {
+            isLiveUpdateActive = !isLiveUpdateActive;
+            if (isLiveUpdateActive) {
+                updateStatus('🟢 Live IoT Data Active', 'status-live');
+            } else {
+                updateStatus('⏸️ Live Updates Paused', 'status-updating');
+            }
+        }
+
+        function exportData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                iotData: currentIoTData,
+                algorithms: ['Baseline', 'SCPSO', 'SCCSO', 'GWO', 'Hybrid'],
+                performance: {
+                    latency: charts.latencyChart?.data.datasets[0].data || [],
+                    energy: charts.energyChart?.data.datasets[0].data || [],
+                    bandwidth: charts.bandwidthChart?.data.datasets[0].data || [],
+                    responseTime: charts.responseTimeChart?.data.datasets[0].data || [],
+                    schedulingTime: charts.schedulingTimeChart?.data.datasets[0].data || [],
+                    loadBalance: charts.loadBalanceChart?.data.datasets[0].data || []
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ifogsim-dashboard-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            updateStatus('📊 Data Exported', 'status-live');
+        }
+
+        // Migration Logs Functions
+        function refreshLogs() {
+            const container = document.getElementById('logsContainer');
+            const newLog = {
+                time: new Date().toLocaleString(),
+                type: ['success', 'migration', 'security'][Math.floor(Math.random() * 3)],
+                message: 'New log entry generated',
+                details: `Algorithm: Hybrid | Node: Edge-${Math.floor(Math.random() * 10)} | Status: Active`
+            };
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${newLog.type}`;
+            logEntry.innerHTML = `
+                <div class="log-time">${newLog.time}</div>
+                <div class="log-type ${newLog.type}">${newLog.type.toUpperCase()}</div>
+                <div>
+                    <div class="log-message">${newLog.message}</div>
+                    <div class="log-details">${newLog.details}</div>
+                </div>
+            `;
+            
+            container.insertBefore(logEntry, container.firstChild);
+            updateLogsStats();
+            updateStatus('🔄 Logs Refreshed', 'status-live');
+        }
+
+        function clearLogs() {
+            const container = document.getElementById('logsContainer');
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: #7f8c8d;">No logs to display</div>';
+            updateLogsStats();
+            updateStatus('🗑️ Logs Cleared', 'status-live');
+        }
+
+        function exportLogs() {
+            const logs = [];
+            document.querySelectorAll('.log-entry').forEach(entry => {
+                logs.push({
+                    time: entry.querySelector('.log-time').textContent,
+                    type: entry.querySelector('.log-type').textContent,
+                    message: entry.querySelector('.log-message').textContent,
+                    details: entry.querySelector('.log-details').textContent
+                });
+            });
+            
+            const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `migration-logs-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            updateStatus('📥 Logs Exported', 'status-live');
+        }
+
+        function filterLogs() {
+            const filter = document.getElementById('logFilter').value;
+            const entries = document.querySelectorAll('.log-entry');
+            
+            entries.forEach(entry => {
+                if (filter === 'all') {
+                    entry.style.display = 'grid';
+                } else {
+                    entry.style.display = entry.classList.contains(filter) ? 'grid' : 'none';
+                }
+            });
+        }
+
+        function updateLogsStats() {
+            const entries = document.querySelectorAll('.log-entry');
+            const totalLogs = entries.length;
+            
+            // Calculate total size (simulate based on content length)
+            let totalSize = 0;
+            entries.forEach(entry => {
+                const content = entry.textContent;
+                totalSize += new Blob([content]).size;
+            });
+            
+            // Format sizes
+            const totalSizeKB = totalSize > 1024 ? (totalSize / 1024).toFixed(1) + ' KB' : totalSize + ' B';
+            const avgSize = totalLogs > 0 ? Math.round(totalSize / totalLogs) + ' B' : '0 B';
+            
+            // Update display
+            document.getElementById('totalLogs').textContent = totalLogs;
+            document.getElementById('totalSize').textContent = totalSizeKB;
+            document.getElementById('avgSize').textContent = avgSize;
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+        }
+
+        // Initialize log stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(updateLogsStats, 1000);
+        });
+    </script>
+</body>
+</html>

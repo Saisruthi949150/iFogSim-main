@@ -676,6 +676,84 @@ const iotDataStore = [];
 const MAX_IOT_RECORDS = 50;
 const IOT_LOGS_FILE = path.join(RESULTS_DIR, 'iot_logs.json');
 
+// IoT sensor configuration for live data generation
+const iotSensors = [
+    { name: 'Temperature', unit: '°C', min: 15, max: 35, deviceId: 'temp_001' },
+    { name: 'Humidity', unit: '%', min: 30, max: 80, deviceId: 'humid_001' },
+    { name: 'Pressure', unit: 'hPa', min: 980, max: 1040, deviceId: 'press_001' },
+    { name: 'Light Level', unit: 'lux', min: 0, max: 1000, deviceId: 'light_001' },
+    { name: 'Motion Detection', unit: 'events', min: 0, max: 50, deviceId: 'motion_001' },
+    { name: 'Air Quality', unit: 'AQI', min: 0, max: 300, deviceId: 'air_001' }
+];
+
+// Generate realistic IoT sensor data
+function generateIoTSensorData() {
+    const timestamp = new Date().toISOString();
+    return iotSensors.map(sensor => {
+        const range = sensor.max - sensor.min;
+        let value = sensor.min + (Math.random() * range);
+        
+        // Add realistic variations
+        if (sensor.name === 'Temperature') {
+            value = 20 + (Math.random() * 10) + (Math.sin(Date.now() / 10000) * 2);
+        } else if (sensor.name === 'Humidity') {
+            const tempValue = 20 + (Math.random() * 10);
+            value = 70 - (tempValue - 20) * 1.5 + (Math.random() * 10);
+        } else if (sensor.name === 'Motion Detection') {
+            value = Math.random() > 0.8 ? Math.random() * 50 : Math.random() * 5;
+        } else if (sensor.name === 'Air Quality') {
+            value = Math.random() > 0.7 ? 50 + Math.random() * 100 : 20 + Math.random() * 30;
+        }
+        
+        value = Math.max(sensor.min, Math.min(sensor.max, value));
+        
+        return {
+            deviceId: sensor.deviceId,
+            sensorName: sensor.name,
+            value: parseFloat(value.toFixed(2)),
+            unit: sensor.unit,
+            timestamp: timestamp,
+            location: `FogNode_${Math.floor(Math.random() * 3) + 1}`
+        };
+    });
+}
+
+/**
+ * GET /api/iot-data/live
+ * Returns live IoT sensor data that updates every 2 minutes
+ */
+app.get('/api/iot-data/live', (req, res) => {
+    try {
+        const liveData = generateIoTSensorData();
+        
+        // Store generated data
+        liveData.forEach(data => {
+            data.receivedAt = new Date().toISOString();
+            iotDataStore.push(data);
+        });
+        
+        // Keep only last 50 records
+        if (iotDataStore.length > MAX_IOT_RECORDS) {
+            iotDataStore.splice(0, iotDataStore.length - MAX_IOT_RECORDS);
+        }
+        
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            sensors: liveData,
+            updateInterval: '2 minutes',
+            nextUpdate: new Date(Date.now() + 120000).toISOString()
+        });
+        
+    } catch (error) {
+        console.error('Error generating live IoT data:', error);
+        res.status(500).json({
+            error: 'Failed to generate IoT data',
+            message: error.message
+        });
+    }
+});
+
 /**
  * POST /api/iot-data
  * Receives simulated IoT sensor data for real-time demonstration

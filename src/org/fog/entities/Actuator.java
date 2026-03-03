@@ -71,6 +71,10 @@ public class Actuator extends SimEntity{
 				double currentAverage = TimeKeeper.getInstance().getLoopIdToCurrentAverage().get(loop.getLoopId());
 				int currentCount = TimeKeeper.getInstance().getLoopIdToCurrentNum().get(loop.getLoopId());
 				double delay = CloudSim.clock()- TimeKeeper.getInstance().getEmitTimes().get(tuple.getActualTupleId());
+				
+				// Record the end time for response time calculation
+				TimeKeeper.getInstance().getEndTimes().put(tuple.getActualTupleId(), CloudSim.clock());
+				
 				TimeKeeper.getInstance().getEmitTimes().remove(tuple.getActualTupleId());
 				double newAverage = (currentAverage*currentCount + delay)/(currentCount+1);
 				TimeKeeper.getInstance().getLoopIdToCurrentAverage().put(loop.getLoopId(), newAverage);

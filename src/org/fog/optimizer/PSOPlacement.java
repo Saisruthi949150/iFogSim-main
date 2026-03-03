@@ -1,8 +1,8 @@
-package org.fog.placement.optimizer;
+package org.fog.optimizer;
 
 import java.util.*;
-import org.fog.entities.FogDevice;
 import org.fog.application.AppModule;
+import org.fog.entities.FogDevice;
 import org.fog.placement.ModulePlacement;
 
 public class PSOPlacement extends ModulePlacement {
@@ -31,6 +31,15 @@ public class PSOPlacement extends ModulePlacement {
         super();
         // You can call runPSO here to find placements
         runPSO(fogDevices.size(), modules.size());
+    }
+
+    @Override
+    protected void mapModules() {
+        // This class is currently a standalone/demo PSO prototype and is not wired into
+        // the main simulation flow. Provide a minimal implementation to satisfy the
+        // abstract ModulePlacement contract and allow compilation.
+        setDeviceToModuleMap(new HashMap<>());
+        setModuleToDeviceMap(new HashMap<>());
     }
 
     private void runPSO(int numDevices, int numModules){

@@ -412,53 +412,69 @@ public class ResultsExporter {
 		json.put("algorithm", algorithmName);
 		
 		JSONArray values = new JSONArray();
-		MetricsTracker metricsTracker = MetricsTracker.getInstance();
 		TimeKeeper timeKeeper = TimeKeeper.getInstance();
 		
-		// Calculate average response time from TimeKeeper data
-		Map<Integer, Double> emitTimes = timeKeeper.getEmitTimes();
-		Map<Integer, Double> endTimes = timeKeeper.getEndTimes();
+		// Use loop latency data which contains the actual response times from end-to-end
+		Map<Integer, Double> loopIdToAverage = timeKeeper.getLoopIdToCurrentAverage();
 		
-		double totalResponseTime = 0.0;
-		int responseTimeCount = 0;
-		List<Double> responseTimes = new java.util.ArrayList<>();
+		// Add response time for each loop
+		for (Integer loopId : loopIdToAverage.keySet()) {
+			JSONObject entry = new JSONObject();
+			String loopDescription = getLoopDescription(loopId, applications);
+			entry.put("loopId", loopId);
+			entry.put("loopDescription", loopDescription != null ? loopDescription : "Loop " + loopId);
+			entry.put("averageResponseTime", loopIdToAverage.get(loopId));
+			entry.put("unit", "ms");
+			values.add(entry);
+		}
 		
-		for (Integer tupleId : emitTimes.keySet()) {
-			if (endTimes.containsKey(tupleId)) {
-				double responseTime = endTimes.get(tupleId) - emitTimes.get(tupleId);
-				responseTimes.add(responseTime);
-				totalResponseTime += responseTime;
-				responseTimeCount++;
+		// If we have loop data, also calculate overall average response time
+		if (!loopIdToAverage.isEmpty()) {
+			double totalResponseTime = 0.0;
+			for (Double respTime : loopIdToAverage.values()) {
+				totalResponseTime += respTime;
+			}
+			double overallAverage = totalResponseTime / loopIdToAverage.size();
+			
+			JSONObject overallEntry = new JSONObject();
+			overallEntry.put("metric", "Overall Average Response Time");
+			overallEntry.put("averageResponseTime", overallAverage);
+			overallEntry.put("loopCount", loopIdToAverage.size());
+			overallEntry.put("unit", "ms");
+			values.add(overallEntry);
+		}
+		
+		// If no loop data, try to calculate from endTimes
+		if (values.isEmpty()) {
+			Map<Integer, Double> emitTimes = timeKeeper.getEmitTimes();
+			Map<Integer, Double> endTimes = timeKeeper.getEndTimes();
+			
+			double totalResponseTime = 0.0;
+			int responseTimeCount = 0;
+			
+			for (Integer tupleId : endTimes.keySet()) {
+				if (emitTimes.containsKey(tupleId)) {
+					double responseTime = endTimes.get(tupleId) - emitTimes.get(tupleId);
+					totalResponseTime += responseTime;
+					responseTimeCount++;
+				}
+			}
+			
+			if (responseTimeCount > 0) {
+				double averageResponseTime = totalResponseTime / responseTimeCount;
+				JSONObject entry = new JSONObject();
+				entry.put("appId", "dynamic_app");
+				entry.put("averageResponseTime", averageResponseTime);
+				entry.put("totalTasks", responseTimeCount);
+				entry.put("unit", "ms");
+				values.add(entry);
 			}
 		}
 		
-		// Calculate average
-		double averageResponseTime = responseTimeCount > 0 ? totalResponseTime / responseTimeCount : 0.0;
-		
-		// Add per-device response time (simplified - average across all devices)
-		for (String appId : applications.keySet()) {
-			JSONObject entry = new JSONObject();
-			entry.put("appId", appId);
-			entry.put("averageResponseTime", averageResponseTime);
-			entry.put("totalTasks", responseTimeCount);
-			entry.put("unit", "ms");
-			values.add(entry);
-		}
-		
-		// Add overall average if no app-specific data
-		if (values.isEmpty() && responseTimeCount > 0) {
-			JSONObject entry = new JSONObject();
-			entry.put("metric", "Overall Average");
-			entry.put("averageResponseTime", averageResponseTime);
-			entry.put("totalTasks", responseTimeCount);
-			entry.put("unit", "ms");
-			values.add(entry);
-		}
-		
-		// If no data, add default entry
+		// If still no data, add default entry
 		if (values.isEmpty()) {
 			JSONObject defaultEntry = new JSONObject();
-			defaultEntry.put("metric", "No data available");
+			defaultEntry.put("appId", "dynamic_app");
 			defaultEntry.put("averageResponseTime", 0.0);
 			defaultEntry.put("totalTasks", 0);
 			defaultEntry.put("unit", "ms");

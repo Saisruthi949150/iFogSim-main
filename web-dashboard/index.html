@@ -138,22 +138,94 @@
             <button class="export-btn" onclick="exportChart('flChart', 'federated-learning')">Export Chart</button>
         </section>
 
-        <!-- Live IoT Data Feed Section -->
+        <!-- Live IoT Data Section -->
         <section class="dashboard-section">
-            <h2>Live IoT Data Feed</h2>
-            <p class="section-subtitle">Real-time sensor data stream for demonstration. <em>Note: Simulated IoT data used for real-time demonstration. Actual fog scheduling evaluated via iFogSim.</em></p>
-            <div id="iotContainer">
-                <div id="iotStatus" class="iot-status">
-                    <p>Waiting for IoT data...</p>
+            <h2>🌐 Live IoT Sensor Data</h2>
+            <p class="section-subtitle">Real-time IoT sensor readings that update automatically every 2 minutes</p>
+            <div class="chart-container">
+                <canvas id="iotLiveDataChart"></canvas>
+            </div>
+            <div class="iot-controls">
+                <button class="export-btn" onclick="updateIoTDataNow()">Update Now</button>
+                <button class="export-btn" onclick="toggleIoTAutoUpdate()">
+                    <span id="iotToggleText">Pause Auto-Update</span>
+                </button>
+            </div>
+            <div id="iotLiveDataInfo" class="info-text">
+                Last updated: <span id="iotLastUpdate">Never</span> | 
+                Next update in: <span id="iotCountdown">2:00</span>
+            </div>
+            <div class="data-grid">
+                <div class="data-card">
+                    <div class="data-value" id="tempValue">--</div>
+                    <div class="data-label">Temperature (°C)</div>
                 </div>
-                <div id="iotDataDisplay" class="iot-data-display">
-                    <!-- IoT data will be populated here -->
+                <div class="data-card">
+                    <div class="data-value" id="humidityValue">--</div>
+                    <div class="data-label">Humidity (%)</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="pressureValue">--</div>
+                    <div class="data-label">Pressure (hPa)</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="lightValue">--</div>
+                    <div class="data-label">Light Level (lux)</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="motionValue">--</div>
+                    <div class="data-label">Motion Events</div>
+                </div>
+                <div class="data-card">
+                    <div class="data-value" id="airQualityValue">--</div>
+                    <div class="data-label">Air Quality (AQI)</div>
                 </div>
             </div>
-            <div id="iotInfo" class="info-text"></div>
-            <p style="font-size: 0.85em; color: #7f8c8d; margin-top: 10px; font-style: italic;">
-                Secure data ingestion: no raw data persisted long-term. Data is stored temporarily for demo visualization only.
-            </p>
+        </section>
+
+        <!-- Multi-Metric Radar Chart -->
+        <section class="dashboard-section">
+            <h2>🎯 Multi-Metric Radar Analysis</h2>
+            <p class="section-subtitle">Comprehensive algorithm performance comparison across all evaluation metrics</p>
+            <div class="chart-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+            <div id="radarInfo" class="info-text"></div>
+            <button class="export-btn" onclick="exportChart('radarChart', 'radar')">Export Chart</button>
+        </section>
+
+        <!-- Performance Time Series Chart -->
+        <section class="dashboard-section">
+            <h2>📈 Performance Trends Over Time</h2>
+            <p class="section-subtitle">Algorithm performance evolution showing trends and patterns</p>
+            <div class="chart-container">
+                <canvas id="timeSeriesChart"></canvas>
+            </div>
+            <div id="timeSeriesInfo" class="info-text"></div>
+            <button class="export-btn" onclick="exportChart('timeSeriesChart', 'time-series')">Export Chart</button>
+        </section>
+
+        <!-- Algorithm Performance Distribution -->
+        <section class="dashboard-section">
+            <h2>🥧 Performance Distribution Analysis</h2>
+            <p class="section-subtitle">Algorithm performance distribution and efficiency comparison</p>
+            <div class="chart-container">
+                <canvas id="pieChart"></canvas>
+            </div>
+            <div id="pieInfo" class="info-text"></div>
+            <button class="export-btn" onclick="exportChart('pieChart', 'pie')">Export Chart</button>
+        </section>
+
+        <!-- Algorithm Rankings -->
+        <section class="dashboard-section">
+            <h2>🏆 Algorithm Performance Rankings</h2>
+            <p class="section-subtitle">Real-time algorithm ranking based on overall performance metrics</p>
+            <div class="ranking-container">
+                <ul class="ranking-list" id="rankingList">
+                    <!-- Rankings will be populated by JavaScript -->
+                </ul>
+            </div>
+            <div id="rankingInfo" class="info-text"></div>
         </section>
 
         <!-- Comparison Table -->
@@ -181,30 +253,7 @@
             <div id="comparisonInfo" class="info-text"></div>
         </section>
 
-        <!-- Live IoT Data Feed Section -->
-        <section class="dashboard-section">
-            <h2>Live IoT Data Feed</h2>
-            <p class="section-subtitle">Real-time simulated IoT sensor data for demonstration purposes</p>
-            <div id="iotDataContainer" class="iot-data-container">
-                <div id="iotStatus" class="iot-status">
-                    <span id="iotStatusText">Waiting for data...</span>
-                    <span id="iotTimestamp" class="iot-timestamp"></span>
-                </div>
-                <div id="iotDataDisplay" class="iot-data-display">
-                    <p style="color: #7f8c8d; font-style: italic;">Start the IoT data generator to see live sensor data.</p>
-                </div>
-            </div>
-            <div id="iotInfo" class="info-text">
-                <p style="color: #95a5a6; font-size: 0.9em; margin-top: 10px;">
-                    <strong>Note:</strong> Simulated IoT data used for real-time demonstration. 
-                    Actual fog scheduling evaluated via iFogSim simulations above.
-                </p>
-                <p style="color: #95a5a6; font-size: 0.85em; margin-top: 8px;">
-                    <strong>To see live streaming data:</strong> Run <code>node iot-generator.js</code> from the <code>iot-simulator</code> directory. 
-                    Demo data is shown when the generator is not running.
-                </p>
-            </div>
-        </section>
+
 
         <!-- Results Discussion Section -->
         <section class="dashboard-section">

@@ -10,6 +10,8 @@ import org.fog.entities.FogDevice;
 import org.fog.entities.Sensor;
 import org.fog.entities.Actuator;
 import org.fog.application.Application;
+import org.fog.optimizer.CatSwarmOptimizer;
+import org.fog.optimizer.GreyWolfOptimizer;
 import org.fog.utils.AlgorithmType;
 import org.fog.utils.MetricsTracker;
 
@@ -218,57 +220,12 @@ public class OptimizedModulePlacement extends ModulePlacement {
      * Optimizes using cat swarm behavior - seeking and tracing modes
      */
     private Map<Integer, List<String>> getSCCSOPlacement(List<AppModule> modules) {
-        Map<Integer, List<String>> deviceToModuleMap = new HashMap<>();
-        
-        FogDevice cloud = null;
-        List<FogDevice> fogNodes = new ArrayList<>();
-        for (FogDevice device : getFogDevices()) {
-            if (device.getName().equals("cloud")) {
-                cloud = device;
-            } else {
-                fogNodes.add(device);
-            }
-        }
-        
-        // SCCSO: Cat swarm optimization - seeking mode (exploration)
-        // Place storage in cloud
-        for (AppModule module : modules) {
-            if (module.getName().equals("storageModule") && cloud != null) {
-                if (!deviceToModuleMap.containsKey(cloud.getId())) {
-                    deviceToModuleMap.put(cloud.getId(), new ArrayList<>());
-                }
-                deviceToModuleMap.get(cloud.getId()).add(module.getName());
-            }
-        }
-        
-        // SCCSO: Cat swarm - prefer devices with better connectivity
-        // (tracing mode - exploitation)
-        for (AppModule module : modules) {
-            if (!module.getName().equals("storageModule") && !fogNodes.isEmpty()) {
-                FogDevice bestFog = null;
-                double bestScore = Double.MAX_VALUE;
-                
-                for (FogDevice fog : fogNodes) {
-                    // Score based on connectivity and proximity
-                    double score = fog.getUplinkLatency() + 
-                                  (fog.getLevel() * 10) + 
-                                  getDeviceLoad(fog);
-                    if (score < bestScore) {
-                        bestScore = score;
-                        bestFog = fog;
-                    }
-                }
-                
-                if (bestFog != null) {
-                    if (!deviceToModuleMap.containsKey(bestFog.getId())) {
-                        deviceToModuleMap.put(bestFog.getId(), new ArrayList<>());
-                    }
-                    deviceToModuleMap.get(bestFog.getId()).add(module.getName());
-                }
-            }
-        }
-        
-        return deviceToModuleMap;
+        CatSwarmOptimizer.Config cfg = new CatSwarmOptimizer.Config();
+        // Keep it lightweight and deterministic for repeatable demos
+        cfg.iterations = 20;
+        cfg.seekingProbability = 0.65;
+        cfg.seed = 7L;
+        return CatSwarmOptimizer.computePlacement(getFogDevices(), modules, cfg);
     }
     
     /**
@@ -276,51 +233,9 @@ public class OptimizedModulePlacement extends ModulePlacement {
      * Optimizes using grey wolf hierarchy (alpha, beta, delta, omega)
      */
     private Map<Integer, List<String>> getGWOPlacement(List<AppModule> modules) {
-        Map<Integer, List<String>> deviceToModuleMap = new HashMap<>();
-        
-        FogDevice cloud = null;
-        List<FogDevice> fogNodes = new ArrayList<>();
-        for (FogDevice device : getFogDevices()) {
-            if (device.getName().equals("cloud")) {
-                cloud = device;
-            } else {
-                fogNodes.add(device);
-            }
-        }
-        
-        // GWO: Grey Wolf hierarchy - rank devices by performance
-        // Place storage in cloud
-        for (AppModule module : modules) {
-            if (module.getName().equals("storageModule") && cloud != null) {
-                if (!deviceToModuleMap.containsKey(cloud.getId())) {
-                    deviceToModuleMap.put(cloud.getId(), new ArrayList<>());
-                }
-                deviceToModuleMap.get(cloud.getId()).add(module.getName());
-            }
-        }
-        
-        // GWO: Rank fog devices (alpha = best, beta = second, etc.)
-        List<FogDevice> rankedFogs = new ArrayList<>(fogNodes);
-        rankedFogs.sort((f1, f2) -> {
-            double score1 = f1.getUplinkLatency() + getDeviceLoad(f1);
-            double score2 = f2.getUplinkLatency() + getDeviceLoad(f2);
-            return Double.compare(score1, score2);
-        });
-        
-        // GWO: Use alpha (best) and beta (second best) for placement
-        for (AppModule module : modules) {
-            if (!module.getName().equals("storageModule") && !rankedFogs.isEmpty()) {
-                // Alternate between alpha and beta wolves
-                FogDevice selectedFog = rankedFogs.get(deviceToModuleMap.size() % Math.min(2, rankedFogs.size()));
-                
-                if (!deviceToModuleMap.containsKey(selectedFog.getId())) {
-                    deviceToModuleMap.put(selectedFog.getId(), new ArrayList<>());
-                }
-                deviceToModuleMap.get(selectedFog.getId()).add(module.getName());
-            }
-        }
-        
-        return deviceToModuleMap;
+        GreyWolfOptimizer.Config cfg = new GreyWolfOptimizer.Config();
+        cfg.leaders = 2; // alpha/beta rotation (simple + stable)
+        return GreyWolfOptimizer.computePlacement(getFogDevices(), modules, cfg);
     }
     
     /**

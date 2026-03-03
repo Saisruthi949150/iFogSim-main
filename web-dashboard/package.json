@@ -1,0 +1,15 @@
+{
+  "name": "web-dashboard",
+  "version": "1.0.0",
+  "description": "**DO NOT open `index.html` directly in the browser** (file:// protocol). This will cause CORS errors and prevent communication with the backend API.",
+  "main": "frontend-server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
